@@ -1,0 +1,110 @@
+{
+  "types": [
+    {
+      "doc": "    Manages razor images.\n",
+      "parameters": [
+        {
+          "doc": "The name of the os.",
+          "name": "name"
+        },
+        {
+          "doc": "The image source, can be either local absolute path or remote http(s) source.",
+          "name": "source"
+        }
+      ],
+      "providers": [
+        {
+          "doc": "Required binaries: `razor`, `curl`.",
+          "name": "default"
+        }
+      ],
+      "properties": [
+        {
+          "doc": "The basic property that the resource should be in.  Valid values are `present`, `absent`.",
+          "name": "ensure"
+        },
+        {
+          "doc": "  Valid values are `mk`, `os`, `esxi`.",
+          "name": "type"
+        },
+        {
+          "doc": "",
+          "name": "version"
+        },
+        {
+          "doc": "The image UUID. This property is not expected to be speciified by the user.",
+          "name": "uuid"
+        }
+      ],
+      "name": "rz_image"
+    }
+  ],
+  "version": "0.2.1",
+  "project_page": "https://github.com/puppetlabs/puppetlabs-razor",
+  "checksums": {
+    "spec/spec_helper.rb": "0db89c9a486df193c0e40095422e19dc",
+    "spec/classes/razor_nodejs_spec.rb": "7fcf008466c388b4e5f454263b56dc18",
+    "manifests/ruby.pp": "2c3dd291b7f7b84d71d211cd9bb4254e",
+    "lib/puppet/puppet_x/puppet_labs/razor.rb": "925d785f229067cd0e2111c37884b4ff",
+    "spec/classes/razor_tftp_spec.rb": "38b33f13e4db3e36d5f695378a072f5c",
+    "lib/puppet/type/rz_image.rb": "9524bde6ce28bae250197797dc79f3a9",
+    "CHANGELOG": "f7cfc485e84a1cc3792ba400cb35951e",
+    "spec/classes/razor_ruby_spec.rb": "4b74faf5c55fd9b0548ca8d2e72998df",
+    "LICENSE": "b3f8a01d8699078d82e8c3c992307517",
+    "files/pxelinux.cfg/default": "a972e6a73fcc17fb307bd05b9a9b8f7f",
+    "templates/razor": "051cc129922a733bcfcc636e87aee950",
+    "files/menu.c32": "ff0486f25f3ef3e59562ba6404cf1c4d",
+    "README.md": "18c02e6d95d4b7c9a4ca94c1d7fb7b2c",
+    "Rakefile": "0254db5d3fc38c67a2c160d7296a24f8",
+    "files/ipxe.iso": "1532367a07509cb0c5c1dfb17872ec36",
+    "tests/ruby187.pp": "f572ba229d82a689916af520643fc071",
+    "templates/razor.ipxe.erb": "e967909a0a439e33b7af56208eb23688",
+    "manifests/nodejs.pp": "3e8eb1ebec9701b7a0882d03143426b2",
+    "tests/init.pp": "cb2e1d749ce822821a3df90ed3734b88",
+    "lib/puppet/provider/rz_image/default.rb": "6d260a041d5fc5a92b8ac9d5b2216b7f",
+    "files/pxelinux.0": "a13943e52958d1789bc326a7a3917959",
+    "files/ipxe.lkrn": "6a259681b88c4b3b9e59ab75f5131492",
+    "spec/classes/razor_spec.rb": "837b7184990e40b7bb7f770f03d2164b",
+    "Modulefile": "ff43ab72d5afcb79674c24f612c235a4",
+    "manifests/tftp.pp": "b42118192ca21ad637c6e5bd8e1559b1",
+    "manifests/init.pp": "aa74c9595099deac3d6ac1f755dd2bbf",
+    "lib/puppet/puppet_x/puppet_labs.rb": "beefd0654bc67455e40b706f1b2bb189",
+    "files/undionly.kpxe": "72a608d477774aab233df576141f5afc"
+  },
+  "dependencies": [
+    {
+      "version_requirement": ">= 2.0.0",
+      "name": "puppetlabs/stdlib"
+    },
+    {
+      "version_requirement": ">= 0.1.0",
+      "name": "puppetlabs/mongodb"
+    },
+    {
+      "version_requirement": ">= 0.1.1",
+      "name": "puppetlabs/nodejs"
+    },
+    {
+      "version_requirement": ">= 0.0.2",
+      "name": "puppetlabs/ruby"
+    },
+    {
+      "version_requirement": ">= 0.1.1",
+      "name": "puppetlabs/tftp"
+    },
+    {
+      "version_requirement": ">= 0.0.4",
+      "name": "puppetlabs/vcsrepo"
+    },
+    {
+      "version_requirement": ">= 2.0.0",
+      "name": "saz/sudo"
+    }
+  ],
+  "summary": "Razor puppet module",
+  "source": "git@github.com:puppetlabs/puppetlabs-razor.git",
+  "description": "Razor provisioning system puppet installation module",
+  "author": "Puppet Labs",
+  "name": "puppetlabs-razor",
+  "license": "Apache 2.0"
+}

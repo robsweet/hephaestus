@@ -1,0 +1,48 @@
+{
+  "name": "robsweet/rhel_satellite",
+  "version": "0.0.1",
+  "source": "UNKNOWN",
+  "author": "robsweet",
+  "license": "Apache License, Version 2.0",
+  "summary": "UNKNOWN",
+  "description": "UNKNOWN",
+  "project_page": "UNKNOWN",
+  "dependencies": [
+
+  ],
+  "types": [
+    {
+      "name": "satellite_channel_prefix",
+      "doc": "Puppet will access our Satellite instance and ensure that a set of channels exists for the\n          given prefix and that this host is subscribed to them.",
+      "properties": [
+        {
+          "name": "ensure",
+          "doc": "The prefix of the channel label that this machine should be subscribed to.  The current base channel label is rhel-x86_64-server-6.  Values can match `/.*/`."
+        }
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "doc": "An arbitrary tag for your own reference; the name of the message."
+        }
+      ],
+      "providers": [
+        {
+          "name": "satellite",
+          "doc": "Provides Subversion support for the repo type\n\nSupported features: `versionable`."
+        }
+      ]
+    }
+  ],
+  "checksums": {
+    "Modulefile": "c676444838db7e8b7eb96041f56b7b05",
+    "README": "f42ea473e6cd21fa89b3d249ab61ca68",
+    "lib/facter/rhn.rb": "f000566db5b19a7cbdb2a6cd1e856499",
+    "lib/puppet/provider/satellite_channel_prefix/satellite.rb": "2ed716a4070848bfb6a43db19cebffe8",
+    "lib/puppet/satellite.rb": "60eb9bc8d8db2768c5f31ce40c16bab7",
+    "lib/puppet/type/satellite_channel_prefix.rb": "f6ad1fc471e1bc04dca560813ffea813",
+    "manifests/init.pp": "717384cfdd29a226d9c4efd326af0c26",
+    "spec/spec_helper.rb": "a55d1e6483344f8ec6963fcb2c220372",
+    "tests/init.pp": "c303f1e3371c7b647b5340d7d1187f4a"
+  }
+}
