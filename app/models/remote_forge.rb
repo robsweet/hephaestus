@@ -10,7 +10,7 @@ class RemoteForge
 
   def mirror_module_with_deps author, shortname
     result = Net::HTTP.get_response URI.parse("#{@base_url}/#{author}/#{shortname}.json")
-    puts JSON.parse(result.body)['releases'].inspect  
+    # Rails.logger.debug JSON.parse(result.body)['releases'].inspect
     JSON.parse(result.body)['releases'].map { |the_hash| the_hash.values.first}.each do |version|
       version_result = Net::HTTP.get_response URI.parse("#{@base_url}/api/v1/releases.json?module=#{author}/#{shortname}&version=#{version}")
       JSON.parse(version_result.body).each do |full_name, versions|
@@ -25,9 +25,9 @@ class RemoteForge
     versions.map { |ver| ver['file'] }.each do |remote_file|
       localfile = remote_file.gsub /\/system\/releases/, Hephaestus::Application.config.local_releases_path
       if File.exist? localfile
-        puts "File #{localfile} exists.  No need to mirror"
+        Rails.logger.debug "File #{localfile} exists.  No need to mirror"
       else
-        puts "File #{localfile} doesn't exist.  Downloading #{@base_url}#{remote_file}"
+        Rails.logger.debug "File #{localfile} doesn't exist.  Downloading #{@base_url}#{remote_file}"
         FileUtils.mkdir_p File.dirname(localfile)
         Net::HTTP.start @base_host, @base_port do |http|
           resp = http.get remote_file

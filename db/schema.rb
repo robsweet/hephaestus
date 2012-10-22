@@ -25,8 +25,11 @@ ActiveRecord::Schema.define(:version => 20121018150110) do
     t.text     "dependencies"
     t.text     "types"
     t.text     "checksums"
-    t.datetime "created_at",   :null => false
-    t.datetime "updated_at",   :null => false
+    t.boolean  "mirrored_from_remote", :default => false
+    t.datetime "created_at",                              :null => false
+    t.datetime "updated_at",                              :null => false
   end
+
+  add_index "puppet_modules", ["name", "version"], :name => "idx_name_version", :unique => true
 
 end

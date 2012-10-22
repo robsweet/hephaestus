@@ -6,13 +6,24 @@ class PuppetModule < ActiveRecord::Base
   serialize :dependencies, JSON
   serialize :types,        JSON
 
-  scope :by_shortname, lambda{ |shortname| where("name rlike '[[:<:]]#{shortname}'") unless shortname.nil? }
-  scope :by_author_and_shortname, lambda{ |author,shortname| where("name like '#{author}_#{shortname}'") unless shortname.nil? }
+  scope :by_shortname, lambda{ |shortname| where("name rlike '[[:<:]]#{shortname}'") if shortname }
+  scope :by_author_and_shortname, lambda{ |author,shortname| where("name like '#{author}_#{shortname}'") if shortname }
+  scope :by_version, lambda{ |version| where(:version => version) if version }
 
   validates_uniqueness_of :name, :scope => :version, :case_sensitive => false
 
+  def self.find_or_mirror author, shortname, version = nil
+    target_scope = PuppetModule.by_author_and_shortname(author, shortname).by_version(version)
+    target_module = target_scope.clone.first
+    return target_module if target_module
+
+    Rails.logger.error "Can't find module for #{author}/#{shortname}-#{version} locally.  Time to mirror!"
+    RemoteForge.new.mirror_module_with_deps author, shortname
+    target_scope.first
+  end
+
   def self.new_from_module module_tarball
-    metadata = `/usr/bin/tar -xzf #{module_tarball} --include '*/metadata.json' -O`
+    metadata = `/bin/tar -xzf #{module_tarball} --wildcards --no-anchored '*/metadata.json' -O`
     self.new JSON.parse( metadata )
   end
 
@@ -20,6 +31,14 @@ class PuppetModule < ActiveRecord::Base
     attribs = JSON.parse File.read(modulefile)
     self.new attribs
   end
+
+  # def self.find_or_mirror author, shortname
+  #   target_module = PuppetModule.by_author_and_shortname(author, shortname).first
+  #   return target_module if target_module
+
+  #   RemoteForge.new.mirror_module_with_deps author, shortname
+  #   PuppetModule.by_author_and_shortname(author, shortname).first
+  # end
 
   def author
     name.split(/[\/-]/).first
@@ -58,14 +77,43 @@ class PuppetModule < ActiveRecord::Base
     }.as_json
   end
 
-  def dependencies_hash
+  def nonrecursive_dependencies_hash
+    # puts "Building deps hash for #{full_name}"
     deps_hash = { full_name => [] }
 
     all_releases.each do |rel|
-      deps_hash[full_name] << { "dependencies" => rel.dependencies,
+      rel_deps = rel.dependencies.map { |ver_dep_hash| [ver_dep_hash['name'], ver_dep_hash['version_requirement']]}
+      deps_hash[full_name] << { "dependencies" => rel_deps,
                                 "version" => rel.version,
                                 "file" => filename }
     end
+    # pp deps_hash
+    # puts "-" * 80
+    deps_hash
+  end
+
+  def deps_left_to_fetch the_hash
+    foo = the_hash.values.map do |versions_array|
+      versions_array.map do |version_hash|
+        version_hash['dependencies'].map { |deps_array| deps_array[0] }
+      end
+    end.flatten.uniq - the_hash.keys
+    # pp foo
+    foo
+  end
+
+  def dependencies_hash
+    deps_hash = nonrecursive_dependencies_hash
+    while !deps_left_to_fetch(deps_hash).empty?
+      # puts "Missing deps_hash entry for #{deps_left_to_fetch(deps_hash).join ', '}"
+      deps_left_to_fetch(deps_hash).each do |depmod_full_name|
+        depmod = PuppetModule.find_or_mirror *depmod_full_name.split('/')
+        if depmod
+          deps_hash.merge! depmod.nonrecursive_dependencies_hash
+        end
+      end
+    end
+    deps_hash
   end
 
 end
