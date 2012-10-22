@@ -9,7 +9,14 @@ class PuppetModule < ActiveRecord::Base
   scope :by_shortname, lambda{ |shortname| where("name rlike '[[:<:]]#{shortname}'") unless shortname.nil? }
   scope :by_author_and_shortname, lambda{ |author,shortname| where("name like '#{author}_#{shortname}'") unless shortname.nil? }
 
-  def self.new_from_modulefile modulefile
+  validates_uniqueness_of :name, :scope => :version, :case_sensitive => false
+
+  def self.new_from_module module_tarball
+    metadata = `/usr/bin/tar -xzf #{module_tarball} --include '*/metadata.json' -O`
+    self.new JSON.parse( metadata )
+  end
+
+  def self.new_from_metadata modulefile
     attribs = JSON.parse File.read(modulefile)
     self.new attribs
   end
@@ -22,15 +29,23 @@ class PuppetModule < ActiveRecord::Base
     name.split(/[\/-]/,2).last
   end
 
+  def filename
+    "#{Hephaestus::Application.config.local_releases_path}/#{author[0]}/#{author}/#{author}-#{shortname}-#{version}.tar.gz"
+  end
+
   def full_name
     author + "/" + shortname
   end
 
-  def all_releases_hash
-    PuppetModule.by_shortname(shortname).select(:version).map { |pm| {'version' => pm.version } }
+  def all_releases
+    PuppetModule.by_shortname(shortname)
   end
 
-  def as_releases_hash
+  def all_releases_hash
+    all_releases.select(:version).map { |pm| {'version' => pm.version } }
+  end
+
+  def releases_hash
     {
       'name' => shortname,
       'releases' => all_releases_hash,
@@ -43,21 +58,14 @@ class PuppetModule < ActiveRecord::Base
     }.as_json
   end
 
-{"name"=>"razor",
- "project_url"=>"https://github.com/puppetlabs/puppetlabs-razor",
- "releases"=>
-  [{"version"=>"0.1.0"},
-   {"version"=>"0.1.1"},
-   {"version"=>"0.1.3"},
-   {"version"=>"0.1.4"},
-   {"version"=>"0.2.0"},
-   {"version"=>"0.2.1"}],
- "author"=>"puppetlabs",
- "version"=>"0.2.1",
- "full_name"=>"puppetlabs/razor",
- "tag_list"=>[],
- "desc"=>
-  "Puppet Razor module will perform the installation of Razor on an Ubuntu Precise system"}
+  def dependencies_hash
+    deps_hash = { full_name => [] }
 
+    all_releases.each do |rel|
+      deps_hash[full_name] << { "dependencies" => rel.dependencies,
+                                "version" => rel.version,
+                                "file" => filename }
+    end
+  end
 
 end
