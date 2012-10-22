@@ -8,7 +8,7 @@ gem 'rails', '3.2.6'
 gem 'mysql2'
 gem 'rack','1.4.1'
 gem 'json'
-gem 'puppet'
+gem 'puppet', '2.7.19'
 
 gem 'wirble'
 
