@@ -10,7 +10,7 @@ class PuppetModule < ActiveRecord::Base
   scope :by_author_and_shortname, lambda{ |author,shortname| where("name like '#{author}_#{shortname}'") if shortname }
   scope :by_version, lambda{ |version| where(:version => version) if version }
 
-  validates_uniqueness_of :name, :scope => :version, :case_sensitive => false
+  validates_uniqueness_of :name, :scope => :version, :case_sensitive => false, :message => "A module with this name and version already exists"
 
   def self.find_or_mirror author, shortname, version = nil
     target_scope = PuppetModule.by_author_and_shortname(author, shortname).by_version(version)
@@ -22,7 +22,7 @@ class PuppetModule < ActiveRecord::Base
     target_scope.first
   end
 
-  def self.new_from_module module_tarball
+  def self.new_from_module_tarball module_tarball
     metadata = `/bin/tar -xzf #{module_tarball} --wildcards --no-anchored '*/metadata.json' -O`
     self.new JSON.parse( metadata )
   end
@@ -77,6 +77,23 @@ class PuppetModule < ActiveRecord::Base
     }.as_json
   end
 
+  def dependencies_hash
+    deps_hash = nonrecursive_dependencies_hash
+    while !deps_left_to_fetch(deps_hash).empty?
+      # puts "Missing deps_hash entry for #{deps_left_to_fetch(deps_hash).join ', '}"
+      deps_left_to_fetch(deps_hash).each do |depmod_full_name|
+        depmod = PuppetModule.find_or_mirror *depmod_full_name.split('/')
+        if depmod
+          deps_hash.merge! depmod.nonrecursive_dependencies_hash
+        end
+      end
+    end
+    deps_hash
+  end
+
+
+  protected
+
   def nonrecursive_dependencies_hash
     # puts "Building deps hash for #{full_name}"
     deps_hash = { full_name => [] }
@@ -100,20 +117,6 @@ class PuppetModule < ActiveRecord::Base
     end.flatten.uniq - the_hash.keys
     # pp foo
     foo
-  end
-
-  def dependencies_hash
-    deps_hash = nonrecursive_dependencies_hash
-    while !deps_left_to_fetch(deps_hash).empty?
-      # puts "Missing deps_hash entry for #{deps_left_to_fetch(deps_hash).join ', '}"
-      deps_left_to_fetch(deps_hash).each do |depmod_full_name|
-        depmod = PuppetModule.find_or_mirror *depmod_full_name.split('/')
-        if depmod
-          deps_hash.merge! depmod.nonrecursive_dependencies_hash
-        end
-      end
-    end
-    deps_hash
   end
 
 end

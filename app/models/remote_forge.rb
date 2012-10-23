@@ -36,7 +36,7 @@ class RemoteForge
           end
         end
       end
-      pm = PuppetModule.new_from_module localfile
+      pm = PuppetModule.new_from_module_tarball localfile
       pm.mirrored_from = @base_url
       pm.mirrored_on = Time.now
       pm.save

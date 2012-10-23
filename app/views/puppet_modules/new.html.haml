@@ -1,0 +1,3 @@
+= form_tag "#{puppet_modules_path}", :enctype => "multipart/form-data" , :method => :post do
+  = file_field :puppet_module, :tarball
+  = submit_tag("Create")
