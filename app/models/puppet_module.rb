@@ -13,17 +13,20 @@ class PuppetModule < ActiveRecord::Base
   validates_uniqueness_of :name, :scope => :version, :case_sensitive => false, :message => "A module with this name and version already exists"
 
   def self.find_or_mirror author, shortname, version = nil
-    target_scope = PuppetModule.by_author_and_shortname(author, shortname).by_version(version)
-    target_module = target_scope.clone.first
+    target_module = PuppetModule.by_author_and_shortname(author, shortname).by_version(version).first
     return target_module if target_module
 
-    Rails.logger.error "Can't find module for #{author}/#{shortname}-#{version} locally.  Time to mirror!"
+    puts  "Can't find module for #{author}/#{shortname} (ver. #{version || '?'}) locally.  Time to mirror!"
     RemoteForge.new.mirror_module_with_deps author, shortname
-    target_scope.first
+    PuppetModule.by_author_and_shortname(author, shortname).by_version(version).first 
+  end
+
+  def self.tar_binary
+    File.exist?("/usr/bin/gnutar") ? '/usr/bin/gnutar' : '/bin/tar'
   end
 
   def self.new_from_module_tarball module_tarball
-    metadata = `/bin/tar -xzf #{module_tarball} --wildcards --no-anchored '*/metadata.json' -O`
+    metadata = `#{tar_binary} -xzf #{module_tarball} --wildcards --no-anchored '*/metadata.json' -O`
     self.new JSON.parse( metadata )
   end
 
