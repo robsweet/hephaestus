@@ -4,6 +4,7 @@ class RemoteForge
   def self.refresh_mirrored_modules
     modules_to_mirror = PuppetModule.where("mirrored_from is not null").group("name")
     forge = self.new
+    forge.repair_mode = true
 
     modules_to_mirror.each do |puppet_module|
       forge.mirror_module_with_deps puppet_module.author, puppet_module.shortname
@@ -24,7 +25,7 @@ class RemoteForge
     result = Net::HTTP.get_response URI.parse("#{@base_url}/#{author}/#{shortname}.json")
     response = JSON.parse(result.body)
     if response['error']
-      Rails.logger. "Error trying to mirror #{author}/#{shortname}"
+      Rails.logger.error "Error trying to mirror #{author}/#{shortname}"
     else
       response['releases'].map { |the_hash| the_hash.values.first}.each do |version|
         version_result = Net::HTTP.get_response URI.parse("#{@base_url}/api/v1/releases.json?module=#{author}/#{shortname}&version=#{version}")
@@ -41,9 +42,10 @@ class RemoteForge
     versions.map { |ver| ver['file'] }.each do |remote_file|
       localfile = remote_file.gsub /\/system\/releases/, Hephaestus::Application.config.local_releases_path
       if File.exist? localfile
-        Rails.logger.debug "File #{localfile} exists.  No need to mirror"
+        Rails.logger.error "File #{localfile} exists.  No need to mirror"
       else
-        Rails.logger.debug "File #{localfile} doesn't exist.  Downloading #{@base_url}#{remote_file}"
+        Rails.logger.error "File #{localfile} doesn't exist.  Downloading #{@base_url}#{remote_file}"
+        fresh_download = true
         FileUtils.mkdir_p File.dirname(localfile)
         Net::HTTP.start @base_host, @base_port do |http|
           resp = http.get remote_file
@@ -53,7 +55,7 @@ class RemoteForge
         end
       end
 
-      create_module_from_tarball localfile if @repair_mode || !File.exist?(localfile)
+      create_module_from_tarball localfile if @repair_mode || fresh_download
     end
   end
 
