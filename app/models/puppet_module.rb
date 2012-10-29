@@ -55,6 +55,10 @@ class PuppetModule < ActiveRecord::Base
     "#{Hephaestus::Application.config.local_releases_path}/#{author[0]}/#{author}/#{author}-#{shortname}-#{version}.tar.gz"
   end
 
+  def file_url
+    filename.gsub /#{Rails.root}/, ''
+  end
+  
   def full_name
     author + "/" + shortname
   end
@@ -105,7 +109,7 @@ class PuppetModule < ActiveRecord::Base
       rel_deps = rel.dependencies.map { |ver_dep_hash| [ver_dep_hash['name'], ver_dep_hash['version_requirement']]}
       deps_hash[full_name] << { "dependencies" => rel_deps,
                                 "version" => rel.version,
-                                "file" => filename }
+                                "file" => file_url }
     end
     # pp deps_hash
     # puts "-" * 80
