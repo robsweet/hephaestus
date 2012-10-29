@@ -11,6 +11,7 @@ class PuppetModulesController < ApplicationController
   def create
     @module = PuppetModule.new_from_module_tarball params['puppet_module']['tarball'].tempfile.path
     if @module.save
+      FileUtils.mkdir_p File.dirname(@module.filename)
       FileUtils.move params['puppet_module']['tarball'].tempfile.path, @module.filename
     end
 
@@ -27,10 +28,9 @@ class PuppetModulesController < ApplicationController
 
       format.json do
         if @module.valid?
-          respond_with @module, :status => 201
+          render :json => @module, :status => 201
         else
-          flash[:error] = @module.errors.full_messages
-          respond_with @module, :status => 422
+          render :json => @module.errors.full_messages, :status => 422
         end
       end
     end
