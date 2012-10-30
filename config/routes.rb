@@ -7,5 +7,5 @@ Hephaestus::Application.routes.draw do
   match ':user/:module(.:format)',   :to => 'puppet_modules#releases',     :via => :get
   match 'api/v1/releases(.:format)', :to => 'puppet_modules#dependencies', :via => :get
 
-
+  root :to => 'puppet_modules#index'
 end

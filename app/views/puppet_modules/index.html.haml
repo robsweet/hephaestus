@@ -1,3 +1,6 @@
+%a{ :href => new_puppet_module_path } 
+  Upload Module Tarball
+
 - PuppetModule.all.map { |mod| mod.shortname }.uniq.sort.each do |shortname|
   .bottom_border{ :class => (PuppetModule.by_shortname(shortname).first.mirrored_from.nil? ? '' : 'mirrored')}
     .bolded= shortname.titleize
