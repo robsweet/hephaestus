@@ -3,7 +3,14 @@ require 'net/http'
 class PuppetModulesController < ApplicationController
 
   respond_to :json
-  before_filter :find_or_mirror_module, :except => [:new, :create]
+  before_filter :find_or_mirror_module, :except => [:index, :new, :create]
+
+  def index
+    respond_to do |format|
+      format.html { render }
+      format.json { render :json => PuppetModule.all.map { |mod| mod.full_name } }
+    end
+  end
 
   def new
   end

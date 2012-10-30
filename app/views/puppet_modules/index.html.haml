@@ -1,0 +1,6 @@
+- PuppetModule.all.map { |mod| mod.shortname }.uniq.sort.each do |shortname|
+  .bottom_border{ :class => (PuppetModule.by_shortname(shortname).first.mirrored_from.nil? ? '' : 'mirrored')}
+    .bolded= shortname.titleize
+    %ul
+      - PuppetModule.by_shortname(shortname).select(:version).map(&:version).sort.reverse.each do |version|
+        %li= version

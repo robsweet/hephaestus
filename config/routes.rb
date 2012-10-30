@@ -1,5 +1,5 @@
 Hephaestus::Application.routes.draw do
-  resource :puppet_modules, :only => [:index, :new, :create]
+  resources :puppet_modules, :only => [:index, :new, :create]
 
   match ':user/:module(.:format)',  :as => 'destroy_puppet_module', :to => 'puppet_modules#destroy', :via => :delete
 
