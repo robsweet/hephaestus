@@ -18,7 +18,7 @@ class PuppetModule < ActiveRecord::Base
 
     puts  "Can't find module for #{author}/#{shortname} (ver. #{version || '?'}) locally.  Time to mirror!"
     RemoteForge.new.mirror_module_with_deps author, shortname
-    PuppetModule.by_author_and_shortname(author, shortname).by_version(version).first 
+    PuppetModule.by_author_and_shortname(author, shortname).by_version(version).first
   end
 
   def self.tar_binary
@@ -58,7 +58,7 @@ class PuppetModule < ActiveRecord::Base
   def file_url
     filename.gsub /#{Rails.root}/, ''
   end
-  
+
   def full_name
     author + "/" + shortname
   end
@@ -92,6 +92,8 @@ class PuppetModule < ActiveRecord::Base
         depmod = PuppetModule.find_or_mirror *depmod_full_name.split('/')
         if depmod
           deps_hash.merge! depmod.nonrecursive_dependencies_hash
+        else
+          raise "Couldn't find or mirror module #{depmod_full_name}"
         end
       end
     end
