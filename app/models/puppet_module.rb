@@ -110,8 +110,10 @@ class PuppetModule < ActiveRecord::Base
     all_releases.each do |rel|
       rel_deps = rel.dependencies.map { |ver_dep_hash| [ver_dep_hash['name'], ver_dep_hash['version_requirement']]}
       deps_hash[full_name] << { "dependencies" => rel_deps,
-                                "version" => rel.version,
-                                "file" => file_url }
+                                "version"      => rel.version,
+                                "file"         => rel.file_url,
+                                "md5sum"       => Digest::MD5.hexdigest(File.read rel.filename)
+                              }
     end
     # pp deps_hash
     # puts "-" * 80
