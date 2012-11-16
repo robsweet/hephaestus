@@ -16,7 +16,7 @@ class PuppetModule < ActiveRecord::Base
     target_module = PuppetModule.by_author_and_shortname(author, shortname).by_version(version).first
     return target_module if target_module
 
-    puts  "Can't find module for #{author}/#{shortname} (ver. #{version || '?'}) locally.  Time to mirror!"
+    Rails.logger.debug  "Can't find module for #{author}/#{shortname} (ver. #{version || '?'}) locally.  Time to mirror!"
     RemoteForge.new.mirror_module_with_deps author, shortname
     PuppetModule.by_author_and_shortname(author, shortname).by_version(version).first
   end
@@ -56,7 +56,7 @@ class PuppetModule < ActiveRecord::Base
   end
 
   def file_url
-    filename.gsub /#{Rails.root}/, ''
+    filename.gsub /#{Rails.root}\/public/, ''
   end
 
   def full_name
@@ -64,7 +64,8 @@ class PuppetModule < ActiveRecord::Base
   end
 
   def all_releases
-    PuppetModule.by_shortname(shortname)
+    PuppetModule.by_author_and_shortname(author, shortname)
+#    PuppetModule.by_shortname(shortname)
   end
 
   def all_releases_hash
