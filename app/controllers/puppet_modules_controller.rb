@@ -63,7 +63,7 @@ class PuppetModulesController < ApplicationController
 
   def dependencies
     # Rails.logger.debug @module.dependencies_hash.as_json
-    respond_with @module.dependencies_hash
+    respond_with @module.dependencies_hash params['version']
   end
 
   protected

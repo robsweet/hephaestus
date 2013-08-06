@@ -85,14 +85,14 @@ class PuppetModule < ActiveRecord::Base
     }.as_json
   end
 
-  def dependencies_hash
-    deps_hash = nonrecursive_dependencies_hash
+  def dependencies_hash version = nil
+    deps_hash = nonrecursive_dependencies_hash version
     while !deps_left_to_fetch(deps_hash).empty?
       # puts "Missing deps_hash entry for #{deps_left_to_fetch(deps_hash).join ', '}"
       deps_left_to_fetch(deps_hash).each do |depmod_full_name|
         depmod = PuppetModule.find_or_mirror *depmod_full_name.split('/')
         if depmod
-          deps_hash.merge! depmod.nonrecursive_dependencies_hash
+          deps_hash.merge! depmod.nonrecursive_dependencies_hash 
         else
           raise "Couldn't find or mirror module #{depmod_full_name}"
         end
@@ -104,11 +104,13 @@ class PuppetModule < ActiveRecord::Base
 
   protected
 
-  def nonrecursive_dependencies_hash
+  def nonrecursive_dependencies_hash version = nil
     # puts "Building deps hash for #{full_name}"
     deps_hash = { full_name => [] }
 
-    all_releases.each do |rel|
+    explore_releases = version.blank? ? all_releases : all_releases.by_version(version)
+    
+    explore_releases.each do |rel|
       rel_deps = rel.dependencies.map { |ver_dep_hash| [ver_dep_hash['name'], ver_dep_hash['version_requirement']]}
       deps_hash[full_name] << { "dependencies" => rel_deps,
                                 "version"      => rel.version,
